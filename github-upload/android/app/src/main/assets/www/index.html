@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#F7F4EC">
+<title>阳明日程 · 知行合一</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/mark.svg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== 顶栏 ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-seal" src="assets/mark.svg" alt="阳明">
+      <div class="brand-text">
+        <h1>阳明日程</h1>
+        <p id="brandSub">知行合一 · 事上磨练</p>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnToday" title="回到今天">今</button>
+  </header>
+
+  <main id="main">
+
+    <!-- ================= 今日 ================= -->
+    <section class="view" id="view-today">
+
+      <!-- 首次运行引导 -->
+      <div class="onboard" id="onboard" hidden>
+        <h2>先记一件事，我给你看它怎么工作</h2>
+        <p>你写下的事里出现什么关键词，首页就换一句对得上的王阳明。完成的多少，也会换。</p>
+        <div class="btn-row">
+          <button class="btn ghost" id="btnOnboardDemo">先用示例看看</button>
+          <button class="btn primary" id="btnOnboardStart">直接开始</button>
+        </div>
+      </div>
+
+      <!-- 示例数据提示 -->
+      <div class="demo-bar" id="demoBar" hidden>
+        <span>现在显示的是 6 条示例数据，方便你熟悉界面。</span>
+        <button class="link-btn danger" id="btnClearDemo">清空示例</button>
+      </div>
+
+      <!-- 逾期未完成 -->
+      <div class="overdue-block" id="overdueBlock" hidden>
+        <div class="overdue-head">
+          <span id="overdueHead">过去有 0 件没划掉</span>
+          <button class="link-btn primary" id="btnPostponeAll">全部顺延到今天</button>
+        </div>
+        <ul class="overdue-list" id="overdueList"></ul>
+      </div>
+
+      <div class="quote-card" id="quoteCard">
+        <div class="quote-inner">
+          <span class="seal-badge" id="quoteTheme">立志</span>
+          <blockquote id="quoteText">正在落笔……</blockquote>
+          <p class="quote-src" id="quoteSrc"></p>
+          <p class="quote-reason" id="quoteReason"></p>
+          <div class="quote-actions">
+            <button class="link-btn" id="btnWhy">为什么是它</button>
+            <button class="link-btn" id="btnDislike">今天不想听这句</button>
+            <button class="link-btn primary" id="btnLike">说得对</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-block">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120" class="ring">
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="ring-label">
+            <strong id="ringPct">0%</strong>
+            <span>完成度</span>
+          </div>
+        </div>
+        <div class="progress-meta">
+          <h2 id="todayTitle">今日</h2>
+          <p id="todayMeta">0 项安排</p>
+          <p class="mood-line" id="todayMood"></p>
+        </div>
+      </div>
+
+      <h3 class="sec-title">今日日程 <span class="sec-sub" id="todayCount"></span></h3>
+      <ul class="task-list" id="todayList"></ul>
+      <div class="empty" id="todayEmpty" hidden>
+        <p>今天还是空的。</p>
+        <p class="dim">点右下角的「＋」记一件事。</p>
+      </div>
+
+    </section>
+
+    <!-- ================= 日历 ================= -->
+    <section class="view" id="view-calendar" hidden>
+
+      <div class="segmented" id="scopeSeg">
+        <button data-scope="day" class="active">日</button>
+        <button data-scope="week">周</button>
+        <button data-scope="month">月</button>
+        <button data-scope="year">年</button>
+      </div>
+
+      <div class="period-nav">
+        <button class="icon-btn ghost" id="navPrev">‹</button>
+        <span id="periodLabel">—</span>
+        <button class="icon-btn ghost" id="navNext">›</button>
+      </div>
+
+      <div id="calBody"></div>
+    </section>
+
+    <!-- ================= 数据 ================= -->
+    <section class="view" id="view-stats" hidden>
+
+      <div class="stat-grid">
+        <div class="stat-card"><strong id="sTotal">0</strong><span>安排总数</span></div>
+        <div class="stat-card"><strong id="sDone">0</strong><span>已完成</span></div>
+        <div class="stat-card"><strong id="sRate">0%</strong><span>完成率</span></div>
+        <div class="stat-card"><strong id="sStreak">0</strong><span>连续达标天数</span></div>
+      </div>
+
+      <h3 class="sec-title">近 30 天完成趋势</h3>
+      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+
+      <h3 class="sec-title">事项都在忙什么</h3>
+      <div class="tagbars" id="tagBars"></div>
+
+      <h3 class="sec-title">语录与你的完成度</h3>
+      <p class="hint" id="quoteStatHint"></p>
+    </section>
+
+    <!-- ================= 我的 ================= -->
+    <section class="view" id="view-me" hidden>
+
+      <div class="me-head">
+        <img src="assets/logo.svg" alt="" class="me-logo">
+        <div>
+          <h2>王阳明</h2>
+          <p class="dim">1472 — 1529 · 名守仁，字伯安，号阳明</p>
+        </div>
+      </div>
+
+      <h3 class="sec-title">设置</h3>
+      <div class="setting-list">
+        <label class="setting-row">
+          <span>日程提醒</span>
+          <input type="checkbox" id="setNotify" class="switch">
+        </label>
+        <label class="setting-row">
+          <span>提醒声音</span>
+          <input type="checkbox" id="setSound" class="switch">
+        </label>
+        <label class="setting-row">
+          <span>显示「为什么是这句」</span>
+          <input type="checkbox" id="setShowReason" class="switch">
+        </label>
+        <label class="setting-row">
+          <span>默认提前提醒</span>
+          <select id="setAdvance">
+            <option value="0">准时</option>
+            <option value="5">5 分钟</option>
+            <option value="10">10 分钟</option>
+            <option value="15">15 分钟</option>
+            <option value="30">30 分钟</option>
+            <option value="60">1 小时</option>
+          </select>
+        </label>
+      </div>
+
+      <h3 class="sec-title">提醒自检</h3>
+      <p class="hint">装到手机上后，先点一次下面这个按钮，确认系统允许「阳明日程」发通知；不然到点了只会安静地错过。</p>
+      <div class="btn-row">
+        <button class="btn" id="btnTestNotify">测试提醒</button>
+        <button class="btn" id="btnAskPerm">申请通知权限</button>
+      </div>
+
+      <h3 class="sec-title">语录库 <span class="sec-sub" id="libCount"></span></h3>
+      <input class="input" id="libSearch" placeholder="搜索原文、出处或主题">
+      <div class="chips wrap lib-flags" id="libTheme"></div>
+      <div class="quote-lib" id="quoteLib"></div>
+      <button class="btn" id="btnLibMore" hidden>显示更多</button>
+
+      <h3 class="sec-title">数据</h3>
+      <div class="btn-row">
+        <button class="btn" id="btnExport">导出备份</button>
+        <button class="btn" id="btnImport">导入备份</button>
+        <button class="btn danger" id="btnClear">清空全部</button>
+      </div>
+      <textarea id="ioBox" class="io-box" placeholder="导出结果会出现在这里；粘贴备份内容后点「导入备份」" hidden></textarea>
+
+      <h3 class="sec-title">关于</h3>
+      <p class="hint">阳明日程 v1.0.0 · 语录取自《传习录》《王阳明全集》等，为公共领域文献。<br>
+      所有数据只存在你的手机上，不上传任何服务器。</p>
+    </section>
+
+  </main>
+
+  <!-- ===== 悬浮添加 ===== -->
+  <button class="fab" id="fab" aria-label="添加日程">＋</button>
+
+  <!-- ===== 底部导航 ===== -->
+  <nav class="tabbar" id="tabbar">
+    <button data-tab="today" class="active"><i>今</i><span>今日</span></button>
+    <button data-tab="calendar"><i>历</i><span>日历</span></button>
+    <button data-tab="stats"><i>数</i><span>数据</span></button>
+    <button data-tab="me"><i>我</i><span>我的</span></button>
+  </nav>
+
+  <!-- ===== 添加/编辑 面板 ===== -->
+  <div class="sheet-mask" id="editMask" hidden></div>
+  <div class="sheet" id="editSheet" hidden>
+    <div class="sheet-head">
+      <button class="link-btn" id="editCancel">取消</button>
+      <strong id="editTitle">新建日程</strong>
+      <button class="link-btn primary" id="editSave">保存</button>
+    </div>
+    <div class="sheet-body">
+      <label class="field">
+        <span>要做什么</span>
+        <input class="input" id="fTitle" placeholder="例如：产品需求评审会" autocomplete="off">
+      </label>
+      <div class="field-row">
+        <label class="field"><span>日期</span><input class="input" type="date" id="fDate"></label>
+        <label class="field"><span>开始</span><input class="input" type="time" id="fStart"></label>
+        <label class="field"><span>结束</span><input class="input" type="time" id="fEnd"></label>
+      </div>
+      <label class="field">
+        <span>备注（也会参与语录匹配）</span>
+        <textarea class="input" id="fNote" rows="2" placeholder="想补充的背景、心情、卡点……"></textarea>
+      </label>
+      <div class="field">
+        <span>重复</span>
+        <div class="chips" id="fRepeat">
+          <button class="chip active" data-v="none">不重复</button>
+          <button class="chip" data-v="daily">每天</button>
+          <button class="chip" data-v="weekday">工作日</button>
+          <button class="chip" data-v="weekly">每周</button>
+          <button class="chip" data-v="monthly">每月</button>
+        </div>
+      </div>
+      <div class="field">
+        <span>提醒</span>
+        <div class="remind-row">
+          <label class="mini-switch"><input type="checkbox" id="fRemind" class="switch"><span>开启</span></label>
+          <select id="fRemindBefore" class="input slim">
+            <option value="0">准时提醒</option>
+            <option value="5">提前 5 分钟</option>
+            <option value="10">提前 10 分钟</option>
+            <option value="15">提前 15 分钟</option>
+            <option value="30">提前 30 分钟</option>
+            <option value="60">提前 1 小时</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <span>这句话里，有哪些关键词（可多选，直接决定推哪句语录）</span>
+        <div class="chips wrap" id="fTags"></div>
+        <p class="dim tiny" id="tagPreview"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 日程详情 面板 ===== -->
+  <div class="sheet-mask" id="detailMask" hidden></div>
+  <div class="sheet" id="detailSheet" hidden>
+    <div class="sheet-head">
+      <button class="link-btn" id="detailClose">关闭</button>
+      <strong>日程详情</strong>
+      <span class="head-actions">
+        <button class="link-btn" id="detailEdit">编辑</button>
+        <button class="link-btn danger" id="detailDelete">删除</button>
+      </span>
+    </div>
+    <div class="sheet-body" id="detailBody"></div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+</div>
+
+<script src="js/data/lexicon.js"></script>
+<script src="js/data/quotes.js"></script>
+<script src="js/data/quotes-01-chuanxilu.js"></script>
+<script src="js/data/quotes-02-prose.js"></script>
+<script src="js/data/quotes-03-poems.js"></script>
+<script src="js/data/quotes-04-supplement.js"></script>
+<script src="js/matcher.js"></script>
+<script src="js/store.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

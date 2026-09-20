@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 应用图标前景：朱砂「王」字印章 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 外圈（印框） -->
+    <path
+        android:pathData="M22,54 a32,32 0 1,0 64,0 a32,32 0 1,0 -64,0 Z"
+        android:strokeColor="#3DB23A2C"
+        android:strokeWidth="2.4"
+        android:fillColor="#00000000" />
+
+    <!-- 王：三横一竖 -->
+    <path android:pathData="M39,40 L69,40"
+        android:strokeColor="#B23A2C" android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <path android:pathData="M43,54 L65,54"
+        android:strokeColor="#B23A2C" android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <path android:pathData="M35,68 L73,68"
+        android:strokeColor="#B23A2C" android:strokeWidth="6"
+        android:strokeLineCap="round" />
+    <path android:pathData="M54,31 L54,77"
+        android:strokeColor="#B23A2C" android:strokeWidth="6"
+        android:strokeLineCap="round" />
+
+</vector>

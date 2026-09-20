@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 宣纸底 -->
+    <color name="paper">#F7F4EC</color>
+    <color name="paper_dark">#EFEAE0</color>
+    <!-- 朱砂 -->
+    <color name="seal">#B23A2C</color>
+    <!-- 墨 -->
+    <color name="ink">#23201C</color>
+    <color name="ic_launcher_background">#F7F4EC</color>
+</resources>

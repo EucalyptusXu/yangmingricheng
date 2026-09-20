@@ -1,0 +1,14 @@
+{
+  "name": "阳明日程 · 知行合一",
+  "short_name": "阳明日程",
+  "description": "把每天的事记下来，王阳明会依据你的关键词，给你一句对得上心境的话。",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F4EC",
+  "theme_color": "#F7F4EC",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "assets/mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
