@@ -1,0 +1,82 @@
+name: Build APK
+
+# 把整个项目推到 GitHub 用的 workflow。先跑 sync-web.sh 同步网页资源，
+# 再构建 Android 工程。这样 APK 里的网页一定和 yangming-schedule/ 源码一致。
+# 只推 android/ 的场景用 android/.github/workflows/build-apk.yml。
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:    # 允许手动从 Actions 页面触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 确认网页资源存在
+        run: |
+          set -e
+          for f in index.html css/style.css js/app.js js/store.js js/matcher.js js/views.js \
+                   js/data/lexicon.js js/data/quotes.js js/data/quotes-01-chuanxilu.js \
+                   js/data/quotes-02-prose.js js/data/quotes-03-poems.js js/data/quotes-04-supplement.js; do
+            test -f "yangming-schedule/$f" || { echo "缺少文件: yangming-schedule/$f"; exit 1; }
+          done
+          # 语料条数检查（必须 ≥ 400 条）
+          n=$(awk '/YM_QUOTES\s*=/,/^];$/' yangming-schedule/js/data/quotes-*.js | grep -c "{ id:")
+          echo "语料条数：$n"
+          if [ "$n" -lt 400 ]; then
+            echo "语料条数不足400"; exit 1
+          fi
+
+      - name: 安装 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 设置 Android SDK
+        uses: android-actions/setup-android@v3        with:
+          api-level: '34'
+          build-tools-version: '34.0.0'
+
+      - name: 接受 Android SDK licenses
+        run: |
+          yes | find $ANDROID_HOME/cmdline-tools -name sdkmanager -exec {} --licenses \; || true
+
+      - name: 安装 Gradle 8.2
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          echo "$GITHUB_WORKSPACE/gradle-8.2/bin" >> $GITHUB_PATH
+
+      - name: 同步网页到 Android assets
+        run: cd android && bash sync-web.sh
+
+      - name: 构建 Debug APK
+        run: |
+          cd android
+          gradle --version
+          gradle assembleDebug --no-daemon --stacktrace
+
+      - name: 上传 APK 作为 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yangming-schedule-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: 写构建摘要
+        if: always()
+        run: |
+          {
+            echo "### 构建 ${{ job.status }}"
+            echo "- commit: ${{ github.event.head_commit.message }}"
+            echo "- branch: ${{ github.ref }}"
+            echo "- APK 产物: yangming-schedule-debug artifact"
+          } >> $GITHUB_STEP_SUMMARY
