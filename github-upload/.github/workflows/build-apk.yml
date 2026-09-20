@@ -1,15 +1,11 @@
 name: Build APK
 
-# 把整个项目推到 GitHub 用的 workflow。先跑 sync-web.sh 同步网页资源，
-# 再构建 Android 工程。这样 APK 里的网页一定和 yangming-schedule/ 源码一致。
-# 只推 android/ 的场景用 android/.github/workflows/build-apk.yml。
-
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:    # 允许手动从 Actions 页面触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,7 +22,6 @@ jobs:
                    js/data/quotes-02-prose.js js/data/quotes-03-poems.js js/data/quotes-04-supplement.js; do
             test -f "yangming-schedule/$f" || { echo "缺少文件: yangming-schedule/$f"; exit 1; }
           done
-          # 语料条数检查（必须 ≥ 400 条）
           n=$(awk '/YM_QUOTES\s*=/,/^];$/' yangming-schedule/js/data/quotes-*.js | grep -c "{ id:")
           echo "语料条数：$n"
           if [ "$n" -lt 400 ]; then
@@ -40,7 +35,8 @@ jobs:
           distribution: 'temurin'
 
       - name: 设置 Android SDK
-        uses: android-actions/setup-android@v3        with:
+        uses: android-actions/setup-android@v3
+        with:
           api-level: '34'
           build-tools-version: '34.0.0'
 
